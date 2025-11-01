@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useState } from "react";
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export default function Settings() {
     if (error) {
       setStatus("Failed to delete account: " + error.message);
     } else {
-      await logout();
+      await signOut();
     }
   };
 
@@ -134,7 +134,7 @@ export default function Settings() {
             <h2 className="text-lg font-medium mb-4 text-black">Account</h2>
             <div className="flex flex-col gap-3 text-sm">
               <button
-                onClick={logout}
+                onClick={signOut}
                 className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Log out

@@ -1,5 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { AppError, getErrorMessage } from '../lib/errors'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { getErrorMessage } from '../lib/errors'
 
 interface Props {
   children: ReactNode
@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
     // In production, you might want to log this to an error reporting service
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // logErrorToService(error, errorInfo)
     }
   }
