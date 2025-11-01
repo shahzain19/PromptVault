@@ -2,14 +2,9 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { supabase } from "../../lib/supabaseClient";
 import { AppError, NetworkError, getErrorMessage } from "../../lib/errors";
 import { validatePromptTitle, validatePromptContent, sanitizeInput } from "../../lib/validation";
+import type { Prompt } from "../../types/prompt";
 
-export type Prompt = {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-};
+export type { Prompt };
 
 type PromptContextType = {
   prompts: Prompt[];
@@ -23,8 +18,8 @@ type PromptContextType = {
   setIsEditOpen: (open: boolean) => void;
   setSelectedPrompt: (prompt: Prompt | null) => void;
   setSearchQuery: (query: string) => void;
-  addPrompt: (title: string, content: string, userId: string) => Promise<void>;
-  updatePrompt: (id: string, title: string, content: string) => Promise<void>;
+  addPrompt: (title: string, content: string, userId: string, isPublic?: boolean) => Promise<void>;
+  updatePrompt: (id: string, title: string, content: string, isPublic?: boolean) => Promise<void>;
   deletePrompt: (id: string) => Promise<void>;
   clearError: () => void;
   refetch: () => Promise<void>;
@@ -90,7 +85,7 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     }
   }, [searchQuery, prompts]);
 
-  const addPrompt = useCallback(async (title: string, content: string, userId: string) => {
+  const addPrompt = useCallback(async (title: string, content: string, userId: string, isPublic: boolean = false) => {
     try {
       setError(null);
 
@@ -110,7 +105,8 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
         .insert([{ 
           title: sanitizedTitle, 
           content: sanitizedContent, 
-          user_id: userId 
+          user_id: userId,
+          is_public: isPublic
         }]);
 
       if (insertError) {
@@ -126,7 +122,7 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchPrompts]);
 
-  const updatePrompt = useCallback(async (id: string, title: string, content: string) => {
+  const updatePrompt = useCallback(async (id: string, title: string, content: string, isPublic: boolean = false) => {
     try {
       setError(null);
 
@@ -145,7 +141,8 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
         .from("prompts")
         .update({ 
           title: sanitizedTitle, 
-          content: sanitizedContent 
+          content: sanitizedContent,
+          is_public: isPublic
         })
         .eq("id", id);
 

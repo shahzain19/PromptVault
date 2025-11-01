@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "../pages/LandingPage";
 import Dashboard from "../pages/Dashboard";
+import Explore from "../pages/Explore";
 import Login from "../features/auth/Login";
 import Signup from "../features/auth/Signup";
 import Settings from "../pages/Settings";
@@ -16,6 +17,11 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/explore" element={
+          <ProtectedRoute>
+            <Explore />
           </ProtectedRoute>
         } />
         <Route path="/settings" element={
