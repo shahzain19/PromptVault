@@ -8,6 +8,20 @@ export class ValidationError extends Error {
   }
 }
 
+export class AppError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NetworkError';
+  }
+}
+
 export const isValidationError = (error: any): error is ValidationError => {
   return error instanceof ValidationError;
 };

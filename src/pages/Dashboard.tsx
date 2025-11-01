@@ -35,7 +35,7 @@ export default function Dashboard() {
         <EditPromptModal
           prompt={selectedPrompt}
           isOpen={isEditOpen}
-          setIsOpen={setIsEditOpen}
+          onClose={() => setIsEditOpen(false)}
         />
       )}
     </div>

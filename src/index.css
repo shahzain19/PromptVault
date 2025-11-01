@@ -368,8 +368,9 @@ p, .text-base {
     --font-size-3xl: 1.5rem;   /* 24px on mobile */
     --font-size-2xl: 1.25rem;  /* 20px on mobile */
   }
-}/
-* Enhanced Landing Page Animations */
+}
+
+/* Enhanced Landing Page Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }

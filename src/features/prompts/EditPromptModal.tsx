@@ -9,7 +9,7 @@ type EditPromptModalProps = {
 };
 
 export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProps) {
-  const { fetchPrompts } = usePrompts();
+  const { refetch } = usePrompts();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
         .eq("id", prompt.id);
       if (error) throw error;
 
-      await fetchPrompts();
+      await refetch();
       onClose();
     } catch (err: any) {
       setError(err.message);
