@@ -1,73 +1,103 @@
-# React + TypeScript + Vite
+# PromptVault
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Your Prompt System for Clarity. Designed for creators who think faster than they can type.
 
-Currently, two official plugins are available:
+PromptVault is a modern web application that helps you organize, manage, and access your AI prompts with ease. Built with React, TypeScript, and Supabase, it provides a clean, fast, and intuitive interface for prompt management.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![PromptVault Preview](public/AppPreview.png)
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **🎯 Clarity First** - A distraction-free interface built for focus
+- **⚡ Fast by Design** - Instant search and real-time updates
+- **🏷️ Smart Organization** - Tag, search, and filter your prompts effortlessly
+- **🔐 Secure Authentication** - User accounts with email verification
+- **📱 Responsive Design** - Works seamlessly on desktop and mobile
+- **🔄 Real-time Sync** - Your prompts are always up-to-date across devices
 
-## Expanding the ESLint configuration
+## 🚀 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS 4.x
+- **Backend**: Supabase (Database + Authentication)
+- **Routing**: React Router DOM
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Build Tool**: Vite with Rolldown
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📦 Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd promptvault
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Button.tsx
+│   ├── Navbar.tsx
+│   ├── Sidebar.tsx
+│   └── PromptCard.tsx
+├── features/           # Feature-based modules
+│   ├── auth/          # Authentication logic
+│   │   ├── useAuth.ts
+│   │   ├── Login.tsx
+│   │   ├── Signup.tsx
+│   │   └── ProtectedRoute.tsx
+│   └── prompts/       # Prompt management
+│       ├── PromptContext.tsx
+│       ├── PromptList.tsx
+│       ├── AddPromptModal.tsx
+│       └── EditPromptModal.tsx
+├── lib/               # Utilities and configurations
+│   ├── supabaseClient.ts
+│   ├── errors.ts
+│   └── validation.ts
+├── pages/             # Page components
+│   ├── Landing.tsx
+│   ├── Dashboard.tsx
+│   ├── Settings.tsx
+│   └── NotFound.tsx
+├── routes/            # Routing configuration
+│   └── AppRoutes.tsx
+└── styles/            # Global styles
+    ├── App.css
+    └── index.css
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🎨 Key Components
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Authentication System
+- **Secure user registration and login** with email verification
+- **Protected routes** for authenticated users
+- **Session management** with automatic token refresh
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Prompt Management
+- **CRUD operations** for prompts (Create, Read, Update, Delete)
+- **Real-time search** and filtering
+- **Input validation** and sanitization
+- **Error handling** with user-friendly messages
+
+### UI/UX Design
+- **M
