@@ -18,7 +18,7 @@ export default function Login() {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
@@ -26,34 +26,34 @@ export default function Login() {
 
   // Clear errors when component mounts or auth error changes
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Clear field error when user starts typing
     if (fieldErrors[field]) {
-      setFieldErrors(prev => ({ ...prev, [field]: "" }));
+      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    
+
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = "Please enter a valid email address";
     }
-    
+
     if (!formData.password) {
       errors.password = "Password is required";
     }
-    
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -66,7 +66,7 @@ export default function Login() {
       navigate(from, { replace: true });
     } catch (error) {
       if (isValidationError(error)) {
-        setFieldErrors({ [error.field || 'general']: error.message });
+        setFieldErrors({ [error.field || "general"]: error.message });
       } else {
         setFieldErrors({ general: getErrorMessage(error) });
       }
@@ -123,7 +123,9 @@ export default function Login() {
               disabled={isFormDisabled}
               autoComplete="current-password"
               aria-invalid={!!fieldErrors.password}
-              aria-describedby={fieldErrors.password ? "password-error" : undefined}
+              aria-describedby={
+                fieldErrors.password ? "password-error" : undefined
+              }
             />
             {fieldErrors.password && (
               <p id="password-error" className="mt-1 text-sm text-red-600">
@@ -132,11 +134,10 @@ export default function Login() {
             )}
           </div>
 
-
           <button
             type="submit"
             disabled={isFormDisabled}
-            className="w-full py-3 bg-blue-600 text-black font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isSubmitting ? (
               <>
@@ -151,8 +152,8 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <Link 
-            to="/signup" 
+          <Link
+            to="/signup"
             className="text-blue-600 hover:underline font-medium"
             tabIndex={isFormDisabled ? -1 : 0}
           >

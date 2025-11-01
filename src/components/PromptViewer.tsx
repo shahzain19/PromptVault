@@ -87,7 +87,7 @@ export default function PromptViewer({ isOpen, onClose, title, content, date }: 
           <div className="flex items-center gap-2 ml-4">
             <button
               onClick={copyToClipboard}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
               {copied ? (
                 <>
@@ -104,7 +104,7 @@ export default function PromptViewer({ isOpen, onClose, title, content, date }: 
             
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 rounded transition-colors"
               aria-label="Close"
             >
               <X size={20} />

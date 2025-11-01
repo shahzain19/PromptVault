@@ -178,7 +178,7 @@ export default function RichTextEditor({
               type="button"
               onClick={button.action}
               disabled={disabled}
-              className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors disabled:opacity-50"
+              className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 transition-colors disabled:opacity-50"
               title={button.title}
             >
               <button.icon size={16} />
@@ -190,7 +190,7 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => setIsPreview(!isPreview)}
-            className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 transition-colors ${
               isPreview 
                 ? 'bg-blue-100 text-blue-700' 
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
