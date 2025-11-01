@@ -1,5 +1,4 @@
 import { usePrompts } from "../features/prompts/PromptContext";
-import Button from "./Button";
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 
@@ -55,7 +54,7 @@ export default function Navbar() {
 
       {/* Right — Add Button */}
       <div className="flex-shrink-0">
-        <Button onClick={() => setIsAddOpen(true)}>+ New Prompt</Button>
+        <button onClick={() => setIsAddOpen(true)}>+ New Prompt</button>
       </div>
     </nav>
   );

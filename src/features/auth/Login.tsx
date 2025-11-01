@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import { getErrorMessage, isValidationError } from "../../lib/errors";
@@ -11,7 +11,7 @@ interface LocationState {
 }
 
 export default function Login() {
-  const { signIn, loading, error: authError, clearError } = useAuth();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,12 +25,6 @@ export default function Login() {
   const from = state?.from?.pathname || "/dashboard";
 
   // Clear errors when component mounts or auth error changes
-  useEffect(() => {
-    if (authError) {
-      clearError();
-    }
-  }, []);
-
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -81,7 +75,7 @@ export default function Login() {
     }
   };
 
-  const isFormDisabled = isSubmitting || loading;
+  const isFormDisabled = isSubmitting;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -138,13 +132,6 @@ export default function Login() {
             )}
           </div>
 
-          {(fieldErrors.general || authError) && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">
-                {fieldErrors.general || authError}
-              </p>
-            </div>
-          )}
 
           <button
             type="submit"

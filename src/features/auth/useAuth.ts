@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabaseClient";
 export function useAuth() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get initial session
@@ -48,5 +49,9 @@ export function useAuth() {
     setUser(null);
   };
 
-  return { user, loading, signUp, signIn, signOut };
+  const clearError = () => {
+    setError(null);
+  };
+
+  return { user, loading, error, signUp, signIn, signOut, clearError };
 }
