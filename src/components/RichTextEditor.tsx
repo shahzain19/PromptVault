@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { 
-  Bold, 
-  Italic, 
-  Code, 
-  List, 
-  ListOrdered, 
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import {
+  Bold,
+  Italic,
+  Code,
+  List,
+  ListOrdered,
   Quote,
   Heading1,
   Heading2,
@@ -50,14 +52,14 @@ export default function RichTextEditor({
     const end = textarea.selectionEnd;
     const selectedText = value.substring(start, end);
     const textToInsert = selectedText || placeholder;
-    
-    const newValue = 
-      value.substring(0, start) + 
-      before + textToInsert + after + 
+
+    const newValue =
+      value.substring(0, start) +
+      before + textToInsert + after +
       value.substring(end);
-    
+
     onChange(newValue);
-    
+
     // Set cursor position
     setTimeout(() => {
       const newCursorPos = start + before.length + textToInsert.length;
@@ -102,37 +104,8 @@ export default function RichTextEditor({
   };
 
   const renderPreview = (text: string) => {
-    // Simple markdown-like rendering
-    let html = text
-      // Headers
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold text-gray-800 mt-4 mb-2">$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold text-gray-800 mt-4 mb-2">$1</h1>')
-      
-      // Bold and Italic
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-      
-      // Code
-      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
-      
-      // Code blocks
-      .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-100 p-3 rounded-lg overflow-x-auto my-2"><code class="text-sm font-mono">$1</code></pre>')
-      
-      // Quotes
-      .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-blue-500 pl-4 italic text-gray-700 my-2">$1</blockquote>')
-      
-      // Lists
-      .replace(/^\- (.*$)/gm, '<li class="ml-4">• $1</li>')
-      .replace(/^\d+\. (.*$)/gm, '<li class="ml-4">$1</li>')
-      
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
-      
-      // Line breaks
-      .replace(/\n/g, '<br>');
-
-    return html;
+    const rawHtml = marked.parse(text, { breaks: true }) as string;
+    return DOMPurify.sanitize(rawHtml);
   };
 
   const toolbarButtons = [
@@ -185,16 +158,15 @@ export default function RichTextEditor({
             </button>
           ))}
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsPreview(!isPreview)}
-            className={`flex items-center gap-1 px-2 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 transition-colors ${
-              isPreview 
-                ? 'bg-blue-100 text-blue-700' 
+            className={`flex items-center gap-1 px-2 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 transition-colors ${isPreview
+                ? 'bg-blue-100 text-blue-700'
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-            }`}
+              }`}
           >
             {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
             {isPreview ? 'Edit' : 'Preview'}
@@ -205,7 +177,7 @@ export default function RichTextEditor({
       {/* Editor/Preview */}
       <div className="relative">
         {isPreview ? (
-          <div 
+          <div
             className="p-3 min-h-[120px] prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: renderPreview(value) }}
           />
