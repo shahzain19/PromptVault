@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { usePrompts } from "./PromptContext";
 import { supabase } from "../../lib/supabaseClient";
 import RichTextEditor from "../../components/RichTextEditor";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Globe, Lock } from "lucide-react";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 type EditPromptModalProps = {
   isOpen: boolean;
@@ -35,7 +38,7 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
     try {
       const { error } = await supabase
         .from("prompts")
-        .update({ title, content, is_public: isPublic })
+        .update({ title: title.trim(), content: content.trim(), is_public: isPublic })
         .eq("id", prompt.id);
       if (error) throw error;
 
@@ -49,71 +52,99 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-all">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 animate-scaleIn">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Edit Prompt</h2>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-12 overflow-hidden selection:bg-black selection:text-white">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => !loading && onClose()}
+          className="absolute inset-0 bg-white/80 backdrop-blur-xl"
+        />
 
-        <form onSubmit={handleUpdate} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <RichTextEditor
-            value={content}
-            onChange={setContent}
-            placeholder="Prompt content..."
-            disabled={loading}
-          />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
+          className="relative w-full max-w-4xl bg-white border border-gray-100 rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-full"
+        >
+          <div className="p-8 sm:p-12 flex items-center justify-between border-b border-gray-50">
+            <div className="space-y-1">
+              <h2 className="text-3xl font-semibold tracking-tighter">Edit Prompt</h2>
+              <p className="text-gray-400 font-medium tracking-tight">Refine your intelligence.</p>
+            </div>
+            <button
+              onClick={() => !loading && onClose()}
+              className="p-4 hover:bg-gray-50 rounded-full transition-all text-gray-400 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+          </div>
 
-          {/* Privacy Toggle */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <form onSubmit={handleUpdate} className="flex-1 overflow-y-auto p-8 sm:p-12 space-y-12">
+            <div className="space-y-8">
+              <input
+                type="text"
+                placeholder="The objective..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full text-4xl sm:text-5xl font-semibold tracking-tighter placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                required
+                disabled={loading}
+              />
+              <RichTextEditor
+                value={content}
+                onChange={setContent}
+                placeholder="The methodology..."
+                disabled={loading}
+                className="text-xl font-medium tracking-tight text-gray-600"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-gray-50">
+              <div
+                onClick={() => !loading && setIsPublic(!isPublic)}
+                className="flex items-center gap-6 cursor-pointer group"
+              >
+                <div className={`p-4 rounded-3xl transition-all duration-500 ${isPublic ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-300'}`}>
+                  {isPublic ? <Globe size={24} /> : <Lock size={24} />}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="font-semibold tracking-tight">Public Visibility</p>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">
+                    {isPublic ? 'Visible to the community.' : 'Stored in your private vault.'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Make this prompt public</p>
-                <p className="text-xs text-gray-500">Others can discover and use your prompt</p>
+
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={loading}
+                  className="flex-1 sm:flex-none px-8 py-5 border border-gray-100 rounded-full font-semibold hover:bg-gray-50 transition-all text-gray-400 hover:text-black"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !title.trim() || !content.trim()}
+                  className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[170px]"
+                >
+                  {loading ? <LoadingSpinner size="sm" color="white" /> : "Save Changes"}
+                </button>
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                disabled={loading}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </form>
+            {error && (
+              <div className="p-6 bg-red-50 rounded-3xl">
+                <p className="text-sm text-red-600 font-semibold">{error}</p>
+              </div>
+            )}
+          </form>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

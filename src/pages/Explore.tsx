@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Compass } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import ExplorePromptCard from "../components/ExplorePromptCard";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import type { Prompt } from "../types/prompt";
+import { motion } from "framer-motion";
 
 type SortOption = "newest" | "oldest";
 
@@ -53,74 +56,71 @@ export default function Explore() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-center text-gray-600">
-        <p className="text-lg font-semibold mb-1">Error fetching prompts</p>
-        <p className="text-sm text-gray-500">{error}</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <LoadingSpinner size="lg" color="black" />
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-white px-6 py-10">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Explore Prompts</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Discover public prompts shared by the community.
-          </p>
-        </div>
+    <div className="flex min-h-screen bg-white">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar />
+        <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-10 space-y-12">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row sm:items-end justify-between gap-6"
+          >
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tighter">Explore</h1>
+              <p className="text-gray-400 font-medium tracking-tight">Discover shared intelligence.</p>
+            </div>
 
-        {/* Search & Sort */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search prompts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter className="text-gray-400 w-5 h-5" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-            </select>
-          </div>
-        </div>
+            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-full border border-gray-100">
+              <button
+                onClick={() => setSortBy("newest")}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'newest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
+              >
+                Newest
+              </button>
+              <button
+                onClick={() => setSortBy("oldest")}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'oldest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
+              >
+                Oldest
+              </button>
+            </div>
+          </motion.div>
 
-        {/* Results */}
-        {filteredPrompts.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">
-            <Search className="mx-auto mb-4 w-10 h-10 text-gray-400" />
-            {searchQuery ? "No results found." : "No public prompts yet."}
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredPrompts.map((prompt) => (
-              <ExplorePromptCard
-                key={prompt.id}
-                title={prompt.title}
-                content={prompt.content}
-                date={new Date(prompt.created_at).toLocaleDateString()}
-                authorName={prompt.author_name || "Anonymous"}
-              />
-            ))}
-          </div>
-        )}
+          {error ? (
+            <div className="py-20 text-center space-y-4">
+              <p className="text-red-500 font-semibold uppercase tracking-widest text-xs">Error fetching prompts</p>
+              <p className="text-gray-400 text-sm">{error}</p>
+            </div>
+          ) : filteredPrompts.length === 0 ? (
+            <div className="py-32 text-center flex flex-col items-center gap-6">
+              <div className="p-6 bg-gray-50 rounded-3xl text-gray-200">
+                <Compass size={40} />
+              </div>
+              <p className="text-gray-400 font-medium tracking-tight">
+                {searchQuery ? "No results found for your search." : "The community is quiet. For now."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredPrompts.map((prompt) => (
+                <ExplorePromptCard
+                  key={prompt.id}
+                  title={prompt.title}
+                  content={prompt.content}
+                  date={new Date(prompt.created_at).toLocaleDateString()}
+                  authorName={prompt.author_name || "Anonymous"}
+                />
+              ))}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

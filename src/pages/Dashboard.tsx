@@ -5,6 +5,7 @@ import PromptList from "../features/prompts/PromptList";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const { isAddOpen } = usePrompts();
@@ -12,16 +13,23 @@ export default function Dashboard() {
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <Navbar />
 
-        <main className="max-w-5xl mx-auto w-full px-6 py-8 space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-800 tracking-tight">
-            Your Prompts
-          </h2>
+        <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-10 space-y-12">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
+          >
+            <h2 className="text-3xl font-semibold tracking-tighter">
+              Your Prompts
+            </h2>
+            <p className="text-gray-400 font-medium tracking-tight">Manage and refine your collection.</p>
+          </motion.div>
 
           <PromptList
             setSelectedPrompt={setSelectedPrompt}

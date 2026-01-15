@@ -4,6 +4,8 @@ import { useAuth } from "../auth/useAuth";
 import { getErrorMessage, isValidationError } from "../../lib/errors";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import RichTextEditor from "../../components/RichTextEditor";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Globe, Lock } from "lucide-react";
 
 export function AddPromptModal() {
   const { isAddOpen, setIsAddOpen, addPrompt } = usePrompts();
@@ -17,14 +19,12 @@ export function AddPromptModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
-  // Focus title input when modal opens
   useEffect(() => {
     if (isAddOpen) {
-      titleRef.current?.focus();
+      setTimeout(() => titleRef.current?.focus(), 100);
     }
   }, [isAddOpen]);
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isAddOpen) {
       setFormData({ title: "", content: "", isPublic: false });
@@ -33,14 +33,12 @@ export function AddPromptModal() {
     }
   }, [isAddOpen]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isAddOpen && !isSubmitting) {
         setIsAddOpen(false);
       }
     };
-
     if (isAddOpen) {
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
@@ -51,8 +49,6 @@ export function AddPromptModal() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // Clear field error when user starts typing
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -60,34 +56,19 @@ export function AddPromptModal() {
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-
-    if (!formData.title.trim()) {
-      errors.title = "Title is required";
-    } else if (formData.title.trim().length > 200) {
-      errors.title = "Title must be less than 200 characters";
-    }
-
-    if (!formData.content.trim()) {
-      errors.content = "Content is required";
-    } else if (formData.content.trim().length > 10000) {
-      errors.content = "Content must be less than 10,000 characters";
-    }
-
+    if (!formData.title.trim()) errors.title = "Title is required";
+    if (!formData.content.trim()) errors.content = "Content is required";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleAddPrompt = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user) {
-      setFieldErrors({ general: "You must be logged in to add prompts" });
+      setFieldErrors({ general: "Authentication required" });
       return;
     }
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setFieldErrors({});
@@ -111,171 +92,106 @@ export function AddPromptModal() {
     }
   };
 
-  const handleClose = () => {
-    if (!isSubmitting) {
-      setIsAddOpen(false);
-    }
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !isSubmitting) {
-      setIsAddOpen(false);
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn px-4"
-      onClick={handleBackdropClick}
-    >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 animate-scaleIn max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Add a New Prompt
-          </h2>
-          <button
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-            aria-label="Close modal"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-12 overflow-hidden selection:bg-black selection:text-white">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => !isSubmitting && setIsAddOpen(false)}
+          className="absolute inset-0 bg-white/80 backdrop-blur-xl"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
+          className="relative w-full max-w-4xl bg-white border border-gray-100 rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-full"
+        >
+          <div className="p-8 sm:p-12 flex items-center justify-between border-b border-gray-50">
+            <div className="space-y-1">
+              <h2 className="text-3xl font-semibold tracking-tighter">New Prompt</h2>
+              <p className="text-gray-400 font-medium tracking-tight">Expand your knowledge base.</p>
+            </div>
+            <button
+              onClick={() => !isSubmitting && setIsAddOpen(false)}
+              className="p-4 hover:bg-gray-50 rounded-full transition-all text-gray-400 hover:text-black"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleAddPrompt} className="space-y-4">
-          <div>
-            <input
-              ref={titleRef}
-              type="text"
-              placeholder="Prompt title"
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                fieldErrors.title
-                  ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-200 focus:ring-blue-500"
-              }`}
-              value={formData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              disabled={isSubmitting}
-              maxLength={200}
-              aria-invalid={!!fieldErrors.title}
-              aria-describedby={fieldErrors.title ? "title-error" : undefined}
-            />
-            {fieldErrors.title && (
-              <p id="title-error" className="mt-1 text-sm text-red-600">
-                {fieldErrors.title}
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              {formData.title.length}/200 characters
-            </p>
+              <X size={24} />
+            </button>
           </div>
 
-          <div>
-            <RichTextEditor
-              value={formData.content}
-              onChange={(value) => handleInputChange("content", value)}
-              placeholder="Write your prompt..."
-              disabled={isSubmitting}
-              maxLength={10000}
-              className={fieldErrors.content ? "border-red-300" : ""}
-            />
-            {fieldErrors.content && (
-              <p id="content-error" className="mt-1 text-sm text-red-600">
-                {fieldErrors.content}
-              </p>
-            )}
-          </div>
+          <form onSubmit={handleAddPrompt} className="flex-1 overflow-y-auto p-8 sm:p-12 space-y-12">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <input
+                  ref={titleRef}
+                  type="text"
+                  placeholder="The objective..."
+                  className="w-full text-4xl sm:text-5xl font-semibold tracking-tighter placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  disabled={isSubmitting}
+                />
+                {fieldErrors.title && <p className="text-xs font-bold uppercase tracking-widest text-red-500">{fieldErrors.title}</p>}
+              </div>
 
-          {/* Privacy Toggle */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="space-y-4">
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(value) => handleInputChange("content", value)}
+                  placeholder="The methodology..."
+                  disabled={isSubmitting}
+                  className="text-xl font-medium tracking-tight text-gray-600"
+                />
+                {fieldErrors.content && <p className="text-xs font-bold uppercase tracking-widest text-red-500">{fieldErrors.content}</p>}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-gray-50">
+              <div
+                onClick={() => !isSubmitting && handleInputChange("isPublic", !formData.isPublic)}
+                className="flex items-center gap-6 cursor-pointer group"
+              >
+                <div className={`p-4 rounded-3xl transition-all duration-500 ${formData.isPublic ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-300'}`}>
+                  {formData.isPublic ? <Globe size={24} /> : <Lock size={24} />}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="font-semibold tracking-tight">Public Visibility</p>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">
+                    {formData.isPublic ? 'Visible to the community.' : 'Stored in your private vault.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => !isSubmitting && setIsAddOpen(false)}
+                  className="flex-1 sm:flex-none px-8 py-5 border border-gray-100 rounded-full font-semibold hover:bg-gray-50 transition-all text-gray-400 hover:text-black"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Make this prompt public
-                </p>
-                <p className="text-xs text-gray-500">
-                  Others can discover and use your prompt
-                </p>
+                  Discard
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !formData.title.trim() || !formData.content.trim()}
+                  className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[160px]"
+                >
+                  {isSubmitting ? <LoadingSpinner size="sm" color="white" /> : "Save Prompt"}
+                </button>
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.isPublic}
-                onChange={(e) =>
-                  handleInputChange("isPublic", e.target.checked)
-                }
-                disabled={isSubmitting}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
 
-          {fieldErrors.general && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{fieldErrors.general}</p>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={
-                isSubmitting ||
-                !formData.title.trim() ||
-                !formData.content.trim()
-              }
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              {isSubmitting ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Adding...
-                </>
-              ) : (
-                "Add Prompt"
-              )}
-            </button>
-          </div>
-        </form>
+            {fieldErrors.general && (
+              <div className="p-6 bg-red-50 rounded-3xl">
+                <p className="text-sm text-red-600 font-semibold">{fieldErrors.general}</p>
+              </div>
+            )}
+          </form>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

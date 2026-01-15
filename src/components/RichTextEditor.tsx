@@ -14,6 +14,7 @@ import {
   Eye,
   Edit3
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RichTextEditorProps {
   value: string;
@@ -35,7 +36,6 @@ export default function RichTextEditor({
   const [isPreview, setIsPreview] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -60,7 +60,6 @@ export default function RichTextEditor({
 
     onChange(newValue);
 
-    // Set cursor position
     setTimeout(() => {
       const newCursorPos = start + before.length + textToInsert.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
@@ -70,36 +69,15 @@ export default function RichTextEditor({
 
   const formatText = (type: string) => {
     switch (type) {
-      case 'bold':
-        insertText('**', '**', 'bold text');
-        break;
-      case 'italic':
-        insertText('*', '*', 'italic text');
-        break;
-      case 'code':
-        insertText('`', '`', 'code');
-        break;
-      case 'codeblock':
-        insertText('\n```\n', '\n```\n', 'code block');
-        break;
-      case 'h1':
-        insertText('\n# ', '', 'Heading 1');
-        break;
-      case 'h2':
-        insertText('\n## ', '', 'Heading 2');
-        break;
-      case 'quote':
-        insertText('\n> ', '', 'Quote');
-        break;
-      case 'ul':
-        insertText('\n- ', '', 'List item');
-        break;
-      case 'ol':
-        insertText('\n1. ', '', 'List item');
-        break;
-      case 'link':
-        insertText('[', '](url)', 'link text');
-        break;
+      case 'bold': insertText('**', '**', 'bold text'); break;
+      case 'italic': insertText('*', '*', 'italic text'); break;
+      case 'code': insertText('`', '`', 'code'); break;
+      case 'h1': insertText('\n# ', '', 'Heading 1'); break;
+      case 'h2': insertText('\n## ', '', 'Heading 2'); break;
+      case 'quote': insertText('\n> ', '', 'Quote'); break;
+      case 'ul': insertText('\n- ', '', 'List item'); break;
+      case 'ol': insertText('\n1. ', '', 'List item'); break;
+      case 'link': insertText('[', '](url)', 'link text'); break;
     }
   };
 
@@ -109,101 +87,78 @@ export default function RichTextEditor({
   };
 
   const toolbarButtons = [
-    { icon: Bold, action: () => formatText('bold'), title: 'Bold (Ctrl+B)' },
-    { icon: Italic, action: () => formatText('italic'), title: 'Italic (Ctrl+I)' },
-    { icon: Code, action: () => formatText('code'), title: 'Inline Code' },
-    { icon: Heading1, action: () => formatText('h1'), title: 'Heading 1' },
-    { icon: Heading2, action: () => formatText('h2'), title: 'Heading 2' },
+    { icon: Bold, action: () => formatText('bold'), title: 'Bold' },
+    { icon: Italic, action: () => formatText('italic'), title: 'Italic' },
+    { icon: Code, action: () => formatText('code'), title: 'Code' },
+    { icon: Heading1, action: () => formatText('h1'), title: 'H1' },
+    { icon: Heading2, action: () => formatText('h2'), title: 'H2' },
     { icon: Quote, action: () => formatText('quote'), title: 'Quote' },
-    { icon: List, action: () => formatText('ul'), title: 'Bullet List' },
-    { icon: ListOrdered, action: () => formatText('ol'), title: 'Numbered List' },
+    { icon: List, action: () => formatText('ul'), title: 'List' },
     { icon: Link, action: () => formatText('link'), title: 'Link' },
   ];
 
-  // Handle keyboard shortcuts
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case 'b':
-          e.preventDefault();
-          formatText('bold');
-          break;
-        case 'i':
-          e.preventDefault();
-          formatText('italic');
-          break;
-        case 'k':
-          e.preventDefault();
-          formatText('link');
-          break;
-      }
-    }
-  };
-
   return (
-    <div className={`border border-gray-200 rounded-lg overflow-hidden ${className}`}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between bg-gray-50 border-b border-gray-200 px-3 py-2">
-        <div className="flex items-center gap-1">
+    <div className={`space-y-6 ${className}`}>
+      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div className="flex items-center gap-2">
           {toolbarButtons.map((button, index) => (
             <button
               key={index}
               type="button"
               onClick={button.action}
-              disabled={disabled}
-              className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 transition-colors disabled:opacity-50"
+              disabled={disabled || isPreview}
+              className="p-3 text-gray-300 hover:text-black hover:bg-gray-50 rounded-2xl transition-all disabled:opacity-30"
               title={button.title}
             >
-              <button.icon size={16} />
+              <button.icon size={18} />
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsPreview(!isPreview)}
-            className={`flex items-center gap-1 px-2 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 transition-colors ${isPreview
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-              }`}
-          >
-            {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
-            {isPreview ? 'Edit' : 'Preview'}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsPreview(!isPreview)}
+          className={`flex items-center gap-2 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${isPreview ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-100'}`}
+        >
+          {isPreview ? <Edit3 size={14} /> : <Eye size={14} />}
+          {isPreview ? 'Edit' : 'Preview'}
+        </button>
       </div>
 
-      {/* Editor/Preview */}
-      <div className="relative">
-        {isPreview ? (
-          <div
-            className="p-3 min-h-[120px] prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: renderPreview(value) }}
-          />
-        ) : (
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            maxLength={maxLength}
-            className="w-full p-3 min-h-[120px] resize-none focus:outline-none bg-white"
-            style={{ minHeight: '120px' }}
-          />
-        )}
+      <div className="relative min-h-[200px]">
+        <AnimatePresence mode="wait">
+          {isPreview ? (
+            <motion.div
+              key="preview"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="prose prose-xl prose-black max-w-none font-medium tracking-tight text-gray-600 leading-relaxed custom-markdown py-4"
+              dangerouslySetInnerHTML={{ __html: renderPreview(value) }}
+            />
+          ) : (
+            <motion.textarea
+              key="editor"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              disabled={disabled}
+              maxLength={maxLength}
+              className="w-full text-xl font-medium tracking-tight text-gray-600 placeholder:text-gray-100 border-none outline-none focus:ring-0 bg-transparent resize-none leading-relaxed min-h-[200px]"
+            />
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Character count */}
-      <div className="flex justify-between items-center bg-gray-50 border-t border-gray-200 px-3 py-1 text-xs text-gray-500">
-        <div className="text-gray-400">
-          Supports **bold**, *italic*, `code`, # headers, quotes, - lists, [links](url)
-        </div>
-        <div>
-          {value.length}/{maxLength}
-        </div>
+      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-200 pt-8 border-t border-gray-50">
+        <span>Markdown Supported</span>
+        <span className={value.length > maxLength * 0.9 ? 'text-red-400' : ''}>
+          {value.length} / {maxLength}
+        </span>
       </div>
     </div>
   );
