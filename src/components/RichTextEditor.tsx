@@ -6,7 +6,6 @@ import {
   Italic,
   Code,
   List,
-  ListOrdered,
   Quote,
   Heading1,
   Heading2,

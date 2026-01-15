@@ -179,7 +179,7 @@ export function AddPromptModal() {
                   disabled={isSubmitting || !formData.title.trim() || !formData.content.trim()}
                   className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[160px]"
                 >
-                  {isSubmitting ? <LoadingSpinner size="sm" color="white" /> : "Save Prompt"}
+                  {isSubmitting ? <LoadingSpinner size="sm"/> : "Save Prompt"}
                 </button>
               </div>
             </div>

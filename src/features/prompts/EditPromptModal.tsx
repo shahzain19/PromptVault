@@ -132,7 +132,7 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                   disabled={loading || !title.trim() || !content.trim()}
                   className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[170px]"
                 >
-                  {loading ? <LoadingSpinner size="sm" color="white" /> : "Save Changes"}
+                  {loading ? <LoadingSpinner size="sm"/> : "Save Changes"}
                 </button>
               </div>
             </div>

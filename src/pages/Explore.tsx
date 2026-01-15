@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Compass } from "lucide-react";
+import {  Compass } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import ExplorePromptCard from "../components/ExplorePromptCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -14,7 +14,7 @@ export default function Explore() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +57,7 @@ export default function Explore() {
   if (loading)
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <LoadingSpinner size="lg" color="black" />
+        <LoadingSpinner size="lg" />
       </div>
     );
 
