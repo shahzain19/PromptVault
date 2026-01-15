@@ -11,9 +11,12 @@ import {
   Heading2,
   Link,
   Eye,
-  Edit3
+  Edit3,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { refinePrompt } from '../lib/aiService';
+import LoadingSpinner from './LoadingSpinner';
 
 interface RichTextEditorProps {
   value: string;
@@ -33,6 +36,7 @@ export default function RichTextEditor({
   maxLength = 10000
 }: RichTextEditorProps) {
   const [isPreview, setIsPreview] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -80,6 +84,20 @@ export default function RichTextEditor({
     }
   };
 
+  const handleRefine = async () => {
+    if (disabled || isRefining || !value.trim()) return;
+
+    setIsRefining(true);
+    try {
+      const { refinedContent } = await refinePrompt(value);
+      onChange(refinedContent);
+    } catch (err) {
+      console.error('Refinement failed:', err);
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
   const renderPreview = (text: string) => {
     const rawHtml = marked.parse(text, { breaks: true }) as string;
     return DOMPurify.sanitize(rawHtml);
@@ -114,14 +132,26 @@ export default function RichTextEditor({
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsPreview(!isPreview)}
-          className={`flex items-center gap-2 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${isPreview ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-100'}`}
-        >
-          {isPreview ? <Edit3 size={14} /> : <Eye size={14} />}
-          {isPreview ? 'Edit' : 'Preview'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleRefine}
+            disabled={disabled || isRefining || isPreview || !value.trim()}
+            className={`flex items-center gap-2 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${isRefining ? 'bg-blue-50 text-blue-500' : 'bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-100'}`}
+          >
+            {isRefining ? <LoadingSpinner size="sm" /> : <Sparkles size={14} />}
+            {isRefining ? 'Refining...' : 'Refine'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsPreview(!isPreview)}
+            className={`flex items-center gap-2 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${isPreview ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-400 hover:text-black hover:bg-gray-100'}`}
+          >
+            {isPreview ? <Edit3 size={14} /> : <Eye size={14} />}
+            {isPreview ? 'Edit' : 'Preview'}
+          </button>
+        </div>
       </div>
 
       <div className="relative min-h-[200px]">

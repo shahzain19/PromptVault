@@ -49,20 +49,10 @@ export default function Landing() {
     },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
-      }
-    }
-  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.2, 0, 0, 1] } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
   return (
@@ -115,7 +105,7 @@ export default function Landing() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.8 }}
           className="space-y-6"
         >
           <h2 className="text-5xl md:text-8xl font-semibold tracking-tighter leading-[0.9] max-w-4xl">
@@ -138,7 +128,7 @@ export default function Landing() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4, duration: 1, ease: [0.2, 0, 0, 1] }}
+          transition={{ delay: 0.4, duration: 1 }}
           className="mt-20 w-full relative"
         >
           <div className="absolute inset-x-0 -top-20 -bottom-20 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent -z-10" />

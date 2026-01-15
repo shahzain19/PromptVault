@@ -1,21 +1,29 @@
 import { useState } from 'react';
 import { Copy, Check, User } from 'lucide-react';
+import { usePrompts } from '../features/prompts/PromptContext';
 import PromptViewer from './PromptViewer';
 import { motion } from 'framer-motion';
 
 type ExplorePromptCardProps = {
+  id: string;
   title: string;
   content: string;
   date: string;
   authorName: string;
+  tags?: string[];
+  copyCount?: number;
 };
 
 export default function ExplorePromptCard({
+  id,
   title,
   content,
   date,
   authorName,
+  tags = [],
+  copyCount = 0,
 }: ExplorePromptCardProps) {
+  const { incrementCopyCount } = usePrompts();
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -24,6 +32,7 @@ export default function ExplorePromptCard({
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
+      incrementCopyCount(id);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
@@ -59,15 +68,32 @@ export default function ExplorePromptCard({
             {title || "Untitled"}
           </h3>
 
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tags.map(tag => (
+                <span key={tag} className="px-2 py-0.5 bg-gray-50 text-[10px] font-bold uppercase tracking-widest rounded-md text-gray-400">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <p className="text-gray-400 font-medium tracking-tight line-clamp-4 leading-relaxed">
             {content}
           </p>
         </div>
 
         <div className="pt-8 flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
-            {date}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
+              {date}
+            </span>
+            {copyCount > 0 && (
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-200">
+                {copyCount} copies
+              </span>
+            )}
+          </div>
 
           <button
             onClick={copyToClipboard}

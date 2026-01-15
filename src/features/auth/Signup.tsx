@@ -6,7 +6,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { motion } from "framer-motion";
 
 export default function Signup() {
-  const { signUp, loading, error: authError, clearError } = useAuth();
+  const { signUp, error: authError, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -150,7 +150,7 @@ export default function Signup() {
             disabled={isSubmitting}
             className="w-full bg-black text-white py-5 rounded-full font-medium text-lg hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isSubmitting ? <LoadingSpinner size="sm" color="white" /> : "Sign up"}
+            {isSubmitting ? <LoadingSpinner size="sm" /> : "Sign up"}
           </button>
         </form>
 

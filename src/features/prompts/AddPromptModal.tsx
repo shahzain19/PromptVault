@@ -14,6 +14,7 @@ export function AddPromptModal() {
     title: "",
     content: "",
     isPublic: false,
+    tags: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +28,7 @@ export function AddPromptModal() {
 
   useEffect(() => {
     if (!isAddOpen) {
-      setFormData({ title: "", content: "", isPublic: false });
+      setFormData({ title: "", content: "", isPublic: false, tags: "" });
       setFieldErrors({});
       setIsSubmitting(false);
     }
@@ -78,7 +79,8 @@ export function AddPromptModal() {
         formData.title.trim(),
         formData.content.trim(),
         user.id,
-        formData.isPublic
+        formData.isPublic,
+        formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
       );
       setIsAddOpen(false);
     } catch (error) {
@@ -107,7 +109,7 @@ export function AddPromptModal() {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.6, ease: "circOut" }}
           className="relative w-full max-w-4xl bg-white border border-gray-100 rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-full"
         >
           <div className="p-8 sm:p-12 flex items-center justify-between border-b border-gray-50">
@@ -148,6 +150,17 @@ export function AddPromptModal() {
                 />
                 {fieldErrors.content && <p className="text-xs font-bold uppercase tracking-widest text-red-500">{fieldErrors.content}</p>}
               </div>
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Tags (comma separated)..."
+                  className="w-full text-xl font-medium tracking-tight text-gray-400 placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                  value={formData.tags}
+                  onChange={(e) => handleInputChange("tags", e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-gray-50">
@@ -179,7 +192,7 @@ export function AddPromptModal() {
                   disabled={isSubmitting || !formData.title.trim() || !formData.content.trim()}
                   className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[160px]"
                 >
-                  {isSubmitting ? <LoadingSpinner size="sm"/> : "Save Prompt"}
+                  {isSubmitting ? <LoadingSpinner size="sm" /> : "Save Prompt"}
                 </button>
               </div>
             </div>

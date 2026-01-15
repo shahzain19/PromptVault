@@ -17,9 +17,12 @@ type PromptContextType = {
   setIsAddOpen: (open: boolean) => void;
   setIsEditOpen: (open: boolean) => void;
   setSelectedPrompt: (prompt: Prompt | null) => void;
+  searchQuery: string;
   setSearchQuery: (query: string) => void;
-  addPrompt: (title: string, content: string, userId: string, isPublic?: boolean) => Promise<void>;
-  updatePrompt: (id: string, title: string, content: string, isPublic?: boolean) => Promise<void>;
+  setFilterType: (type: 'all' | 'favorites' | 'public') => void;
+  addPrompt: (title: string, content: string, userId: string, isPublic?: boolean, tags?: string[]) => Promise<void>;
+  updatePrompt: (id: string, title: string, content: string, isPublic?: boolean, tags?: string[], isFavorite?: boolean) => Promise<void>;
+  incrementCopyCount: (id: string) => Promise<void>;
   deletePrompt: (id: string) => Promise<void>;
   clearError: () => void;
   refetch: () => Promise<void>;
@@ -31,6 +34,7 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<'all' | 'favorites' | 'public'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -70,29 +74,39 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     fetchPrompts();
   }, [fetchPrompts]);
 
-  // Real-time filtering based on search query
+  // Real-time filtering based on search query, tags, and filter type
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredPrompts(prompts);
-    } else {
+    let filtered = prompts;
+
+    // Filter by type
+    if (filterType === 'favorites') {
+      filtered = filtered.filter(p => p.is_favorite);
+    } else if (filterType === 'public') {
+      filtered = filtered.filter(p => p.is_public);
+    }
+
+    // Filter by search query (title, content, or tags)
+    if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const filtered = prompts.filter(
+      filtered = filtered.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
-          p.content.toLowerCase().includes(q)
+          p.content.toLowerCase().includes(q) ||
+          p.tags?.some(tag => tag.toLowerCase().includes(q))
       );
-      setFilteredPrompts(filtered);
     }
-  }, [searchQuery, prompts]);
 
-  const addPrompt = useCallback(async (title: string, content: string, userId: string, isPublic: boolean = false) => {
+    setFilteredPrompts(filtered);
+  }, [searchQuery, filterType, prompts]);
+
+  const addPrompt = useCallback(async (title: string, content: string, userId: string, isPublic: boolean = false, tags?: string[]) => {
     try {
       setError(null);
 
       // Validate inputs
       const sanitizedTitle = sanitizeInput(title);
       const sanitizedContent = sanitizeInput(content);
-      
+
       validatePromptTitle(sanitizedTitle);
       validatePromptContent(sanitizedContent);
 
@@ -102,11 +116,14 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
 
       const { error: insertError } = await supabase
         .from("prompts")
-        .insert([{ 
-          title: sanitizedTitle, 
-          content: sanitizedContent, 
+        .insert([{
+          title: sanitizedTitle,
+          content: sanitizedContent,
           user_id: userId,
-          is_public: isPublic
+          is_public: isPublic,
+          tags: tags || [],
+          copy_count: 0,
+          is_favorite: false
         }]);
 
       if (insertError) {
@@ -122,14 +139,14 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchPrompts]);
 
-  const updatePrompt = useCallback(async (id: string, title: string, content: string, isPublic: boolean = false) => {
+  const updatePrompt = useCallback(async (id: string, title: string, content: string, isPublic: boolean = false, tags?: string[], isFavorite: boolean = false) => {
     try {
       setError(null);
 
       // Validate inputs
       const sanitizedTitle = sanitizeInput(title);
       const sanitizedContent = sanitizeInput(content);
-      
+
       validatePromptTitle(sanitizedTitle);
       validatePromptContent(sanitizedContent);
 
@@ -139,10 +156,12 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
 
       const { error: updateError } = await supabase
         .from("prompts")
-        .update({ 
-          title: sanitizedTitle, 
+        .update({
+          title: sanitizedTitle,
           content: sanitizedContent,
-          is_public: isPublic
+          is_public: isPublic,
+          tags: tags,
+          is_favorite: isFavorite
         })
         .eq("id", id);
 
@@ -158,6 +177,25 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
   }, [fetchPrompts]);
+
+  const incrementCopyCount = useCallback(async (id: string) => {
+    try {
+      const prompt = prompts.find(p => p.id === id);
+      if (!prompt) return;
+
+      const { error } = await supabase
+        .from("prompts")
+        .update({ copy_count: (prompt.copy_count || 0) + 1 })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      // Optimistic update
+      setPrompts(prev => prev.map(p => p.id === id ? { ...p, copy_count: (p.copy_count || 0) + 1 } : p));
+    } catch (error) {
+      console.error("Error incrementing copy count:", error);
+    }
+  }, [prompts]);
 
   const deletePrompt = useCallback(async (id: string) => {
     try {
@@ -205,9 +243,12 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
         setIsAddOpen,
         setIsEditOpen,
         setSelectedPrompt,
+        searchQuery,
         setSearchQuery,
+        setFilterType,
         addPrompt,
         updatePrompt,
+        incrementCopyCount,
         deletePrompt,
         clearError,
         refetch,

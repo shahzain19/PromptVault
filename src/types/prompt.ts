@@ -6,4 +6,7 @@ export type Prompt = {
   user_id: string;
   is_public: boolean;
   author_name?: string;
+  tags?: string[];
+  is_favorite?: boolean;
+  copy_count?: number;
 };

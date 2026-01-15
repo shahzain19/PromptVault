@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { usePrompts } from "./PromptContext";
-import { supabase } from "../../lib/supabaseClient";
 import RichTextEditor from "../../components/RichTextEditor";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Globe, Lock } from "lucide-react";
+import { X, Globe, Lock, Star } from "lucide-react";
 import LoadingSpinner from "../../components/LoadingSpinner";
-
 type EditPromptModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -13,10 +11,12 @@ type EditPromptModalProps = {
 };
 
 export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProps) {
-  const { refetch } = usePrompts();
+  const { updatePrompt } = usePrompts();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const [tags, setTags] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +25,8 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
       setTitle(prompt.title);
       setContent(prompt.content);
       setIsPublic(prompt.is_public || false);
+      setTags(prompt.tags?.join(", ") || "");
+      setIsFavorite(prompt.is_favorite || false);
     }
   }, [prompt]);
 
@@ -36,13 +38,14 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("prompts")
-        .update({ title: title.trim(), content: content.trim(), is_public: isPublic })
-        .eq("id", prompt.id);
-      if (error) throw error;
-
-      await refetch();
+      await updatePrompt(
+        prompt.id,
+        title.trim(),
+        content.trim(),
+        isPublic,
+        tags.split(",").map(t => t.trim()).filter(Boolean),
+        isFavorite
+      );
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -66,7 +69,7 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.6, ease: "circOut" }}
           className="relative w-full max-w-4xl bg-white border border-gray-100 rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-full"
         >
           <div className="p-8 sm:p-12 flex items-center justify-between border-b border-gray-50">
@@ -100,6 +103,14 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                 disabled={loading}
                 className="text-xl font-medium tracking-tight text-gray-600"
               />
+              <input
+                type="text"
+                placeholder="Tags (comma separated)..."
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full text-xl font-medium tracking-tight text-gray-400 placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                disabled={loading}
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-gray-50">
@@ -118,6 +129,21 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                 </div>
               </div>
 
+              <div
+                onClick={() => !loading && setIsFavorite(!isFavorite)}
+                className="flex items-center gap-6 cursor-pointer group"
+              >
+                <div className={`p-4 rounded-3xl transition-all duration-500 ${isFavorite ? 'bg-yellow-50 text-yellow-500 shadow-xl shadow-yellow-500/10' : 'bg-gray-50 text-gray-300'}`}>
+                  <Star size={24} fill={isFavorite ? "currentColor" : "none"} />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="font-semibold tracking-tight">Favorite</p>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">
+                    {isFavorite ? 'Pin this to your favorites.' : 'Mark as a key prompt.'}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <button
                   type="button"
@@ -132,7 +158,7 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                   disabled={loading || !title.trim() || !content.trim()}
                   className="flex-1 sm:flex-none px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center min-w-[170px]"
                 >
-                  {loading ? <LoadingSpinner size="sm"/> : "Save Changes"}
+                  {loading ? <LoadingSpinner size="sm" /> : "Save Changes"}
                 </button>
               </div>
             </div>

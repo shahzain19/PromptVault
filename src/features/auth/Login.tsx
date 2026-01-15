@@ -119,7 +119,7 @@ export default function Login() {
             disabled={isSubmitting}
             className="w-full bg-black text-white py-5 rounded-full font-medium text-lg hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isSubmitting ? <LoadingSpinner size="sm" color="white" /> : "Sign in"}
+            {isSubmitting ? <LoadingSpinner size="sm" /> : "Sign in"}
           </button>
         </form>
 

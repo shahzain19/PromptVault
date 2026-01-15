@@ -1,7 +1,6 @@
 import { usePrompts } from "./PromptContext";
 import PromptCard from "../../components/PromptCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { motion } from "framer-motion";
 
 type PromptListProps = {
   setSelectedPrompt: (prompt: any) => void;
@@ -17,7 +16,7 @@ export default function PromptList({
   if (loading)
     return (
       <div className="flex flex-col justify-center items-center py-32">
-        <LoadingSpinner size="lg" color="black" />
+        <LoadingSpinner size="lg" className="text-black" />
         <p className="text-gray-400 font-medium tracking-tight mt-6">Loading prompts...</p>
       </div>
     );
@@ -53,6 +52,7 @@ export default function PromptList({
       {filteredPrompts.map((prompt) => (
         <PromptCard
           key={prompt.id}
+          id={prompt.id}
           title={prompt.title}
           content={prompt.content}
           date={new Date(prompt.created_at).toLocaleDateString("en-US", {
@@ -61,6 +61,9 @@ export default function PromptList({
             day: "numeric",
           })}
           isPublic={prompt.is_public}
+          tags={prompt.tags}
+          isFavorite={prompt.is_favorite}
+          copyCount={prompt.copy_count}
           onEdit={() => {
             setSelectedPrompt(prompt);
             setIsEditOpen(true);

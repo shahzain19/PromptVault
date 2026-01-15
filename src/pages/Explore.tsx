@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import {  Compass } from "lucide-react";
+import { Compass } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import ExplorePromptCard from "../components/ExplorePromptCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -112,10 +112,13 @@ export default function Explore() {
               {filteredPrompts.map((prompt) => (
                 <ExplorePromptCard
                   key={prompt.id}
+                  id={prompt.id}
                   title={prompt.title}
                   content={prompt.content}
                   date={new Date(prompt.created_at).toLocaleDateString()}
                   authorName={prompt.author_name || "Anonymous"}
+                  tags={prompt.tags}
+                  copyCount={prompt.copy_count}
                 />
               ))}
             </div>
