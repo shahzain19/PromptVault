@@ -3,11 +3,13 @@ import { Copy, Check, Edit3, Trash2, Star } from 'lucide-react';
 import { usePrompts } from '../features/prompts/PromptContext';
 import PromptViewer from './PromptViewer';
 import { motion } from 'framer-motion';
+import Markdown from './Markdown';
 
 type PromptCardProps = {
   id: string;
   title: string;
   content: string;
+  description?: string | null;
   date: string;
   isPublic?: boolean;
   tags?: string[];
@@ -21,6 +23,7 @@ export default function PromptCard({
   id,
   title,
   content,
+  description,
   date,
   isPublic = false,
   tags = [],
@@ -48,7 +51,7 @@ export default function PromptCard({
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await updatePrompt(id, title, content, isPublic, tags, !isFavorite);
+      await updatePrompt(id, { is_favorite: !isFavorite });
     } catch (err) {
       console.error('Failed to toggle favorite:', err);
     }
@@ -72,9 +75,16 @@ export default function PromptCard({
       >
         <div className="space-y-6">
           <div className="flex justify-between items-start gap-4">
-            <h3 className="text-2xl font-semibold tracking-tighter leading-tight line-clamp-2">
-              {title || "Untitled"}
-            </h3>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-semibold tracking-tighter leading-tight line-clamp-2">
+                {title || "Untitled"}
+              </h3>
+              {description && (
+                <p className="text-sm text-gray-400 font-medium tracking-tight line-clamp-2">
+                  {description}
+                </p>
+              )}
+            </div>
             {isPublic && (
               <span className="shrink-0 px-3 py-1 bg-gray-50 text-[10px] font-bold uppercase tracking-widest rounded-full border border-gray-100">
                 Public
@@ -92,9 +102,9 @@ export default function PromptCard({
             </div>
           )}
 
-          <p className="text-gray-400 font-medium tracking-tight line-clamp-4 leading-relaxed">
-            {content}
-          </p>
+          <div className="text-gray-400 font-medium tracking-tight">
+            <Markdown content={content} isPreview={true} />
+          </div>
         </div>
 
         <div className="pt-8 flex items-center justify-between">

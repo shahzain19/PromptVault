@@ -8,12 +8,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
-  const { isAddOpen, setFilterType } = usePrompts();
+  const { isAddOpen, setFilterType, selectedFolderId, folders } = usePrompts();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'favorites' | 'public'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'favorites' | 'public' | 'folder'>('all');
 
-  const handleTabChange = (tab: 'all' | 'favorites' | 'public') => {
+  const currentFolder = folders.find(f => f.id === selectedFolderId);
+
+  const handleTabChange = (tab: 'all' | 'favorites' | 'public' | 'folder') => {
     setActiveTab(tab);
     setFilterType(tab);
   };
@@ -32,10 +34,12 @@ export default function Dashboard() {
             className="space-y-2"
           >
             <h2 className="text-3xl font-semibold tracking-tighter">
-              Your Prompts
+              {selectedFolderId && currentFolder ? currentFolder.name : "Your Prompts"}
             </h2>
             <div className="flex items-center justify-between gap-4">
-              <p className="text-gray-400 font-medium tracking-tight">Manage and refine your collection.</p>
+              <p className="text-gray-400 font-medium tracking-tight">
+                {selectedFolderId && currentFolder ? `Managing prompts in ${currentFolder.name}.` : "Manage and refine your collection."}
+              </p>
 
               <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-full">
                 {([

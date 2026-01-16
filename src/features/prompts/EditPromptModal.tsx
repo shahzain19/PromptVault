@@ -11,10 +11,12 @@ type EditPromptModalProps = {
 };
 
 export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProps) {
-  const { updatePrompt } = usePrompts();
+  const { updatePrompt, folders } = usePrompts();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const [folderId, setFolderId] = useState("");
   const [tags, setTags] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,9 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
     if (prompt) {
       setTitle(prompt.title);
       setContent(prompt.content);
+      setDescription(prompt.description || "");
       setIsPublic(prompt.is_public || false);
+      setFolderId(prompt.folder_id || "");
       setTags(prompt.tags?.join(", ") || "");
       setIsFavorite(prompt.is_favorite || false);
     }
@@ -37,15 +41,21 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
     setError(null);
     setLoading(true);
 
+    // Detect variables
+    const variableRegex = /{{(.*?)}}/g;
+    const variables = Array.from(content.matchAll(variableRegex)).map(match => match[1].trim());
+
     try {
-      await updatePrompt(
-        prompt.id,
-        title.trim(),
-        content.trim(),
-        isPublic,
-        tags.split(",").map(t => t.trim()).filter(Boolean),
-        isFavorite
-      );
+      await updatePrompt(prompt.id, {
+        title: title.trim(),
+        content: content.trim(),
+        description: description.trim(),
+        is_public: isPublic,
+        folder_id: folderId || null,
+        tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+        is_favorite: isFavorite,
+        variables
+      });
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -96,6 +106,14 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                 required
                 disabled={loading}
               />
+              <input
+                type="text"
+                placeholder="Short description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full text-xl font-medium tracking-tight text-gray-500 placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                disabled={loading}
+              />
               <RichTextEditor
                 value={content}
                 onChange={setContent}
@@ -111,6 +129,17 @@ export function EditPromptModal({ isOpen, onClose, prompt }: EditPromptModalProp
                 className="w-full text-xl font-medium tracking-tight text-gray-400 placeholder:text-gray-100 border-none outline-none focus:ring-0"
                 disabled={loading}
               />
+              <select
+                className="w-full bg-gray-50 px-6 py-4 rounded-3xl border-none outline-none focus:ring-2 focus:ring-black text-gray-600 font-medium appearance-none cursor-pointer"
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
+                disabled={loading}
+              >
+                <option value="">Move to folder...</option>
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>{folder.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-12 border-t border-gray-50">

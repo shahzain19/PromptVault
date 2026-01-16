@@ -55,6 +55,7 @@ export default function PromptList({
           id={prompt.id}
           title={prompt.title}
           content={prompt.content}
+          description={prompt.description}
           date={new Date(prompt.created_at).toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",

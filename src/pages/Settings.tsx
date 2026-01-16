@@ -2,16 +2,57 @@ import { useAuth } from "../features/auth/useAuth";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { supabase } from "../lib/supabaseClient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, Mail, Trash2, LogOut } from "lucide-react";
+import { Shield, Mail, Trash2, LogOut, Key, ChevronRight, User, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { usePrompts } from "../features/prompts/PromptContext";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
+  const { updateProfile } = usePrompts();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Profile Form State
+  const [profileData, setProfileData] = useState({
+    username: "",
+    full_name: "",
+    bio: "",
+    website: "",
+    avatar_url: "",
+    cover_url: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        username: user.user_metadata?.username || "",
+        full_name: user.user_metadata?.full_name || "",
+        bio: user.user_metadata?.bio || "",
+        website: user.user_metadata?.website || "",
+        avatar_url: user.user_metadata?.avatar_url || "",
+        cover_url: user.user_metadata?.cover_url || ""
+      });
+    }
+  }, [user]);
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus(null);
+    setLoading(true);
+    try {
+      await updateProfile(profileData);
+      setStatus("Profile updated successfully.");
+    } catch (err: any) {
+      setStatus(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +116,118 @@ export default function Settings() {
           </motion.div>
 
           <div className="grid gap-16">
+            {/* Profile Section */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-gray-50 rounded-3xl text-gray-400">
+                  <User size={24} />
+                </div>
+                <div className="space-y-0.5">
+                  <h2 className="text-xl font-semibold tracking-tight">Profile</h2>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">Your public identity in the community.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleProfileUpdate} className="space-y-8">
+                <div className="grid sm:grid-cols-2 gap-8">
+                  <div className="bg-gray-50/50 p-8 rounded-[32px] border border-gray-100 flex flex-col gap-6">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Profile Picture</p>
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 rounded-3xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
+                        {profileData.avatar_url ? (
+                          <img src={profileData.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={24} className="text-gray-200" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Avatar URL"
+                          value={profileData.avatar_url}
+                          onChange={(e) => setProfileData({ ...profileData, avatar_url: e.target.value })}
+                          className="w-full py-2 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-sm font-medium tracking-tight placeholder:text-gray-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50/50 p-8 rounded-[32px] border border-gray-100 flex flex-col gap-6">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Cover Image</p>
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
+                        {profileData.cover_url ? (
+                          <img src={profileData.cover_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Globe size={24} className="text-gray-200" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Cover URL"
+                          value={profileData.cover_url}
+                          onChange={(e) => setProfileData({ ...profileData, cover_url: e.target.value })}
+                          className="w-full py-2 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-sm font-medium tracking-tight placeholder:text-gray-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Username</p>
+                    <input
+                      type="text"
+                      placeholder="username"
+                      value={profileData.username}
+                      onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
+                      className="w-full py-4 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-lg font-medium tracking-tight placeholder:text-gray-200"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Full Name</p>
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={profileData.full_name}
+                      onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
+                      className="w-full py-4 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-lg font-medium tracking-tight placeholder:text-gray-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Bio</p>
+                  <textarea
+                    placeholder="Tell the community about yourself..."
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                    className="w-full py-4 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-lg font-medium tracking-tight placeholder:text-gray-200 resize-none min-h-[100px]"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Website</p>
+                  <input
+                    type="url"
+                    placeholder="https://yourwebsite.com"
+                    value={profileData.website}
+                    onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                    className="w-full py-4 bg-transparent border-b border-gray-100 focus:border-black transition-colors outline-none text-lg font-medium tracking-tight placeholder:text-gray-200"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-30"
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </button>
+              </form>
+            </section>
             {/* Identity Section */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
@@ -137,6 +290,30 @@ export default function Settings() {
                   {loading ? "Updating..." : "Update Password"}
                 </button>
               </form>
+            </section>
+
+            {/* Developer Section */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-gray-50 rounded-3xl text-gray-400">
+                  <Key size={24} />
+                </div>
+                <div className="space-y-0.5">
+                  <h2 className="text-xl font-semibold tracking-tight">Developer</h2>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">Access your vault programmatically.</p>
+                </div>
+              </div>
+
+              <Link
+                to="/settings/api-keys"
+                className="flex items-center justify-between p-8 bg-gray-50/50 rounded-[32px] border border-gray-100 hover:border-black/10 transition-all group"
+              >
+                <div className="space-y-1">
+                  <p className="font-semibold tracking-tight">API Management</p>
+                  <p className="text-sm text-gray-400 font-medium tracking-tight">Generate and manage your API keys.</p>
+                </div>
+                <ChevronRight size={20} className="text-gray-300 group-hover:text-black transition-colors" />
+              </Link>
             </section>
 
             {/* Actions Section */}

@@ -1,7 +1,6 @@
 import { X, Copy, Check, Type } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import Markdown from './Markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PromptViewerProps {
@@ -51,10 +50,7 @@ export default function PromptViewer({ isOpen, onClose, title, content, date }: 
     }
   };
 
-  const renderFormattedContent = (text: string) => {
-    const rawHtml = marked.parse(text, { breaks: true }) as string;
-    return DOMPurify.sanitize(rawHtml);
-  };
+  // renderFormattedContent is replaced by Markdown component
 
   return (
     <AnimatePresence>
@@ -103,10 +99,9 @@ export default function PromptViewer({ isOpen, onClose, title, content, date }: 
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-8 sm:p-24">
-              <div
-                className="prose prose-2xl prose-black max-w-none font-medium tracking-tight text-gray-600 leading-relaxed custom-markdown"
-                dangerouslySetInnerHTML={{ __html: renderFormattedContent(getProcessedContent()) }}
-              />
+              <div className="prose prose-2xl prose-black max-w-none font-medium tracking-tight text-gray-600 leading-relaxed custom-markdown">
+                <Markdown content={getProcessedContent()} />
+              </div>
 
               {variableList.length > 0 && (
                 <div className="mt-24 pt-24 border-t border-gray-50 space-y-12">

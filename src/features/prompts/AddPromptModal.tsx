@@ -8,12 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Globe, Lock } from "lucide-react";
 
 export function AddPromptModal() {
-  const { isAddOpen, setIsAddOpen, addPrompt } = usePrompts();
+  const { isAddOpen, setIsAddOpen, addPrompt, folders } = usePrompts();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    description: "",
     isPublic: false,
+    folderId: "",
     tags: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -28,7 +30,7 @@ export function AddPromptModal() {
 
   useEffect(() => {
     if (!isAddOpen) {
-      setFormData({ title: "", content: "", isPublic: false, tags: "" });
+      setFormData({ title: "", content: "", description: "", isPublic: false, folderId: "", tags: "" });
       setFieldErrors({});
       setIsSubmitting(false);
     }
@@ -74,14 +76,20 @@ export function AddPromptModal() {
     setIsSubmitting(true);
     setFieldErrors({});
 
+    // Detect variables
+    const variableRegex = /{{(.*?)}}/g;
+    const variables = Array.from(formData.content.matchAll(variableRegex)).map(match => match[1].trim());
+
     try {
-      await addPrompt(
-        formData.title.trim(),
-        formData.content.trim(),
-        user.id,
-        formData.isPublic,
-        formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      );
+      await addPrompt({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        description: formData.description.trim(),
+        is_public: formData.isPublic,
+        folder_id: formData.folderId || null,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        variables
+      });
       setIsAddOpen(false);
     } catch (error) {
       if (isValidationError(error)) {
@@ -137,6 +145,14 @@ export function AddPromptModal() {
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   disabled={isSubmitting}
                 />
+                <input
+                  type="text"
+                  placeholder="Short description..."
+                  className="w-full text-xl font-medium tracking-tight text-gray-500 placeholder:text-gray-100 border-none outline-none focus:ring-0"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  disabled={isSubmitting}
+                />
                 {fieldErrors.title && <p className="text-xs font-bold uppercase tracking-widest text-red-500">{fieldErrors.title}</p>}
               </div>
 
@@ -160,6 +176,20 @@ export function AddPromptModal() {
                   onChange={(e) => handleInputChange("tags", e.target.value)}
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div className="space-y-4">
+                <select
+                  className="w-full bg-gray-50 px-6 py-4 rounded-3xl border-none outline-none focus:ring-2 focus:ring-black text-gray-600 font-medium appearance-none cursor-pointer"
+                  value={formData.folderId}
+                  onChange={(e) => handleInputChange("folderId", e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Move to folder...</option>
+                  {folders.map(folder => (
+                    <option key={folder.id} value={folder.id}>{folder.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

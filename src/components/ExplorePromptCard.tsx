@@ -3,13 +3,20 @@ import { Copy, Check, User } from 'lucide-react';
 import { usePrompts } from '../features/prompts/PromptContext';
 import PromptViewer from './PromptViewer';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 type ExplorePromptCardProps = {
   id: string;
   title: string;
   content: string;
+  description?: string | null;
   date: string;
-  authorName: string;
+  author: {
+    id: string;
+    username: string | null;
+    full_name: string | null;
+    avatar_url?: string | null;
+  };
   tags?: string[];
   copyCount?: number;
 };
@@ -18,8 +25,9 @@ export default function ExplorePromptCard({
   id,
   title,
   content,
+  description,
   date,
-  authorName,
+  author,
   tags = [],
   copyCount = 0,
 }: ExplorePromptCardProps) {
@@ -57,16 +65,38 @@ export default function ExplorePromptCard({
         className="group relative bg-white border border-gray-100 p-8 rounded-[32px] hover:border-black transition-all duration-500 cursor-pointer flex flex-col justify-between min-h-[320px] selection:bg-black selection:text-white overflow-hidden"
       >
         <div className="space-y-6">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
-              <User size={10} className="text-gray-400" />
+          <Link
+            to={`/u/${author?.username || 'unknown'}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-3 group/author mb-2"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 group-hover/author:border-black transition-all">
+              {author?.avatar_url ? (
+                <img src={author.avatar_url || undefined} alt={author.full_name || ""} className="w-full h-full object-cover" />
+              ) : (
+                <User size={14} className="text-gray-200" />
+              )}
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{authorName}</span>
-          </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 group-hover/author:text-black transition-colors">
+                {author?.full_name || 'Anonymous'}
+              </span>
+              <span className="text-[10px] text-gray-400 font-medium tracking-tight">
+                @{author?.username || 'user'}
+              </span>
+            </div>
+          </Link>
 
-          <h3 className="text-2xl font-semibold tracking-tighter leading-tight line-clamp-2">
-            {title || "Untitled"}
-          </h3>
+          <div className="space-y-2">
+            <h3 className="text-2xl font-semibold tracking-tighter leading-tight line-clamp-2">
+              {title || "Untitled"}
+            </h3>
+            {description && (
+              <p className="text-sm text-gray-400 font-medium tracking-tight line-clamp-2">
+                {description}
+              </p>
+            )}
+          </div>
 
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -78,7 +108,7 @@ export default function ExplorePromptCard({
             </div>
           )}
 
-          <p className="text-gray-400 font-medium tracking-tight line-clamp-4 leading-relaxed">
+          <p className="text-gray-400/60 font-medium tracking-tight line-clamp-3 leading-relaxed text-sm">
             {content}
           </p>
         </div>

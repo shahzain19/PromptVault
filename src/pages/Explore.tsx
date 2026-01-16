@@ -14,42 +14,45 @@ export default function Explore() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPrompts = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("prompts")
-        .select("*")
-        .eq("is_public", true)
-        .order("created_at", { ascending: sortBy === "oldest" });
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from("prompts")
+          .select("*, author:profiles(full_name, username, avatar_url)")
+          .eq("is_public", true)
+          .order("created_at", { ascending: sortBy === "oldest" });
 
-      if (error) setError(error.message);
-      else {
-        const withAuthors = (data || []).map((p) => ({
-          ...p,
-          author_name: `User ${p.user_id.slice(0, 8)}`,
-        }));
-        setPrompts(withAuthors);
-        setFilteredPrompts(withAuthors);
+        if (error) throw error;
+        setPrompts(data || []);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchPrompts();
   }, [sortBy]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) return setFilteredPrompts(prompts);
+    if (!searchQuery.trim()) {
+      setFilteredPrompts(prompts);
+      return;
+    }
     const q = searchQuery.toLowerCase();
     setFilteredPrompts(
       prompts.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.content.toLowerCase().includes(q) ||
-          p.author_name?.toLowerCase().includes(q)
+          (p.author?.full_name || "").toLowerCase().includes(q) ||
+          (p.author?.username || "").toLowerCase().includes(q)
       )
     );
   }, [searchQuery, prompts]);
@@ -77,19 +80,28 @@ export default function Explore() {
               <p className="text-gray-400 font-medium tracking-tight">Discover shared intelligence.</p>
             </div>
 
-            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-full border border-gray-100">
-              <button
-                onClick={() => setSortBy("newest")}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'newest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
-              >
-                Newest
-              </button>
-              <button
-                onClick={() => setSortBy("oldest")}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'oldest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
-              >
-                Oldest
-              </button>
+            <div className="flex items-center gap-4">
+              <input
+                type="text"
+                placeholder="Search community..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-gray-50 px-6 py-2.5 rounded-full border border-gray-100 outline-none focus:ring-2 focus:ring-black text-sm transition-all min-w-[240px]"
+              />
+              <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-full border border-gray-100">
+                <button
+                  onClick={() => setSortBy("newest")}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'newest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
+                >
+                  Newest
+                </button>
+                <button
+                  onClick={() => setSortBy("oldest")}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === 'oldest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
+                >
+                  Oldest
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -115,8 +127,9 @@ export default function Explore() {
                   id={prompt.id}
                   title={prompt.title}
                   content={prompt.content}
+                  description={prompt.description}
                   date={new Date(prompt.created_at).toLocaleDateString()}
-                  authorName={prompt.author_name || "Anonymous"}
+                  author={prompt.author || { id: prompt.user_id, username: 'user', full_name: 'Anonymous' } as any}
                   tags={prompt.tags}
                   copyCount={prompt.copy_count}
                 />

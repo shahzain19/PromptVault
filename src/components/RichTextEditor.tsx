@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import Markdown from './Markdown';
 import {
   Bold,
   Italic,
@@ -98,10 +97,7 @@ export default function RichTextEditor({
     }
   };
 
-  const renderPreview = (text: string) => {
-    const rawHtml = marked.parse(text, { breaks: true }) as string;
-    return DOMPurify.sanitize(rawHtml);
-  };
+  // renderPreview is replaced by Markdown component
 
   const toolbarButtons = [
     { icon: Bold, action: () => formatText('bold'), title: 'Bold' },
@@ -157,14 +153,9 @@ export default function RichTextEditor({
       <div className="relative min-h-[200px]">
         <AnimatePresence mode="wait">
           {isPreview ? (
-            <motion.div
-              key="preview"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="prose prose-xl prose-black max-w-none font-medium tracking-tight text-gray-600 leading-relaxed custom-markdown py-4"
-              dangerouslySetInnerHTML={{ __html: renderPreview(value) }}
-            />
+            <div className="prose prose-xl prose-black max-w-none font-medium tracking-tight text-gray-600 leading-relaxed custom-markdown py-4">
+              <Markdown content={value} />
+            </div>
           ) : (
             <motion.textarea
               key="editor"
