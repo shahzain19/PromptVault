@@ -12,7 +12,6 @@ const port = process.env.PORT || 3001;
 // Initialize Supabase with service role to bypass RLS for API key validation
 const supabase = createClient(
     "https://flevgwciyphpwxmuhmyr.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsZXZnd2NpeXBocHd4bXVobXlyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTk4NDQxNSwiZXhwIjoyMDc3NTYwNDE1fQ.BQZSTfUJNASxI3zzQ7vx8KSIiucjNOoxf6XT3JMTGFI"
 );
 
 app.use(express.json());
