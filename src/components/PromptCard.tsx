@@ -3,7 +3,7 @@ import { Copy, Check, Edit3, Trash2, Star } from 'lucide-react';
 import { usePrompts } from '../features/prompts/PromptContext';
 import PromptViewer from './PromptViewer';
 import { motion } from 'framer-motion';
-import Markdown from './Markdown';
+import MarkdownRenderer from './Markdown';
 
 type PromptCardProps = {
   id: string;
@@ -103,7 +103,7 @@ export default function PromptCard({
           )}
 
           <div className="text-gray-400 font-medium tracking-tight">
-            <Markdown content={content} isPreview={true} />
+            <MarkdownRenderer content={content} isPreview={true} />
           </div>
         </div>
 

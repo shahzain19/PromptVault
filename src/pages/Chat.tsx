@@ -9,7 +9,7 @@ import Sidebar from "../components/Sidebar";
 import { useAuth } from "../features/auth/useAuth";
 import { startChatSession, generateAgent } from "../lib/gemini";
 import { useNavigate } from "react-router-dom";
-import Markdown from "../components/Markdown";
+import MarkdownRenderer from "../components/Markdown";
 
 type Message = {
     id: string;
@@ -172,7 +172,7 @@ export default function Chat() {
                                                         </p>
                                                     </div>
                                                     <div className="text-xl font-medium leading-relaxed tracking-tight text-gray-800 break-words">
-                                                        <Markdown content={message.content} />
+                                                        <MarkdownRenderer content={message.content} />
                                                     </div>
                                                 </div>
                                             </div>

@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Agent } from "../types/prompt";
-import Markdown from "../components/Markdown";
+import MarkdownRenderer from "../components/Markdown";
 
 export default function AgentRun() {
     const { id } = useParams();
@@ -178,7 +178,7 @@ export default function AgentRun() {
                                                 <div className="space-y-1 flex-1">
                                                     <p className="text-[10px] font-bold uppercase tracking-widest text-black/40">{node?.data.label || 'Task'}</p>
                                                     <div className="text-sm font-medium text-gray-700 leading-relaxed break-words">
-                                                        <Markdown content={typeof res === 'string' ? res : JSON.stringify(res, null, 2)} />
+                                                        <MarkdownRenderer content={typeof res === 'string' ? res : JSON.stringify(res, null, 2)} />
                                                     </div>
                                                 </div>
                                             </div>
